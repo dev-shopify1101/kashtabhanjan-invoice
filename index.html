@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kashtabhanjan Cooling System Invoice</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>*{
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f4f4;
+    padding:20px;
+    margin:0;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    background:#fff;
+    padding:25px;
+    border-radius:10px;
+}
+
+input,
+textarea{
+    width:100%;
+    padding:12px;
+    margin:5px 0;
+    box-sizing:border-box;
+    font-size:16px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,
+td{
+    border:1px solid #ddd;
+    padding:10px;
+}
+
+th{
+    background:#1f4e79;
+    color:#fff;
+}
+
+.btn{
+    border:none;
+    color:#fff;
+    padding:12px 16px;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.add{
+    background:#28a745;
+}
+
+.pdf{
+    background:#1f4e79;
+}
+
+.del{
+    background:#dc3545;
+}
+
+#invoice-template{
+    width:900px;
+    max-width:900px;
+    min-height:1180px;
+    background:#fff;
+    padding:40px;
+    position:relative;
+    color:#333;
+}
+
+.pdf-title{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.top-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+}
+
+hr{
+    border:none;
+    border-top:4px solid #666;
+    margin:25px 0;
+}
+
+.bill-to-section{
+    margin:40px 0;
+}
+
+.invoice-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.invoice-table th{
+    background:#fff;
+    color:#000;
+    border:none;
+    border-bottom:2px solid #ccc;
+}
+
+.invoice-table th:nth-child(2),
+.invoice-table th:nth-child(3),
+.invoice-table th:nth-child(4),
+.invoice-table td:nth-child(2),
+.invoice-table td:nth-child(3),
+.invoice-table td:nth-child(4){
+    text-align:right;
+}
+
+.invoice-table td{
+    border:none;
+    border-bottom:1px solid #ddd;
+}
+
+.summary{
+    width:300px;
+    margin-left:auto;
+    margin-top:30px;
+}
+
+.summary-row{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 0;
+}
+
+.total{
+    border-top:2px solid #ccc;
+    margin-top:10px;
+    padding-top:10px;
+    font-size:24px;
+    font-weight:bold;
+}
+
+.pdf-signatures{
+    position:absolute;
+    left:40px;
+    right:40px;
+    bottom:70px;
+    display:flex;
+    justify-content:space-between;
+}
+
+.sign-box{
+    width:250px;
+    text-align:center;
+}
+
+.sign-line{
+    border-top:1px solid #000;
+    margin-bottom:8px;
+}
+
+.thank-you-note{
+    position:absolute;
+    bottom:15px;
+    left:0;
+    right:0;
+    text-align:center;
+    color:#666;
+}
+
+.hidden-pdf{
+    display:none;
+}
+
+/* ========================= */
+/* MOBILE VIEW */
+/* ========================= */
+
+@media screen and (max-width:768px){
+
+    body{
+        padding:10px;
+    }
+
+    .container{
+        padding:15px;
+        border-radius:0;
+    }
+
+    h2{
+        text-align:center;
+        font-size:24px;
+    }
+
+    input,
+    textarea{
+        font-size:16px;
+        padding:14px;
+    }
+
+    .btn{
+        width:100%;
+        margin-bottom:10px;
+    }
+
+    table{
+        display:block;
+    }
+
+    table thead{
+        display:none;
+    }
+
+    #tableBody input{
+        width:100%;
+        display:block;
+    }
+
+    #tableBody tr{
+        display:block;
+        width:100%;
+        box-sizing:border-box;
+        border:1px solid #ddd;
+        border-radius:10px;
+        margin-bottom:15px;
+        padding:15px;
+        background:#fafafa;
+    }
+
+    #tableBody td{
+        display:block;
+        width:100%;
+        border:none;
+        padding:6px 0;
+    }
+
+    #tableBody td::before{
+        display:block;
+        font-weight:bold;
+        margin-bottom:4px;
+    }
+
+    #tableBody td:nth-child(1)::before{
+        content:"Description";
+    }
+
+    #tableBody td:nth-child(2)::before{
+        content:"Qty";
+    }
+
+    #tableBody td:nth-child(3)::before{
+        content:"Rate";
+    }
+
+    #tableBody td:nth-child(4)::before{
+        content:"Total";
+    }
+
+    h3{
+        text-align:center;
+        margin-top:20px;
+    }
+
+    #grandTotal{
+        font-size:26px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h2>Invoice Generator</h2>
+
+<input id="customerName" placeholder="Customer Name">
+<input id="customerMobile" placeholder="Mobile Number">
+<textarea id="customerAddress" placeholder="Customer Address"></textarea>
+
+<table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Qty</th>
+<th>Rate (₹)</th>
+<th>Total (₹)</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+
+<br>
+
+<button class="btn add" onclick="addRow()">Add Item</button>
+
+<h3>Total ₹ <span id="grandTotal">0.00</span></h3>
+
+<button class="btn pdf" onclick="generatePDF()">Download PDF</button>
+
+</div>
+
+<div id="invoice-template" class="hidden-pdf">
+
+<div class="pdf-title">
+<h1>Kashtabhanjan Cooling System</h1>
+<h3>Invoice</h3>
+</div>
+
+<div class="top-header">
+
+<div>
+<p>Sachin Padsala</p>
+<p>Shop No. 3, Ratanpark Society</p>
+<p>Uttamnagar, Nikol</p>
+<p>Ahmedabad, Gujarat</p>
+</div>
+
+<div style="text-align:right">
+<p><b>Invoice #</b> <span id="pdfInvoiceNo"></span></p>
+<p><b>Issue Date</b></p>
+<p id="pdfDate"></p>
+</div>
+
+</div>
+
+<hr>
+
+<div class="bill-to-section">
+<h4>BILL TO</h4>
+<p id="pdfName"></p>
+<p id="pdfMobile"></p>
+<p id="pdfAddress"></p>
+</div>
+
+<table class="invoice-table">
+<thead>
+<tr>
+<th>ITEM</th>
+<th>QTY</th>
+<th>RATE</th>
+<th>AMOUNT</th>
+</tr>
+</thead>
+<tbody id="pdfItems"></tbody>
+</table>
+
+<div class="summary">
+<div class="summary-row">
+<span>Subtotal</span>
+<span id="pdfSubtotal"></span>
+</div>
+
+<div class="summary-row total">
+<span>Total Due</span>
+<span id="pdfTotal"></span>
+</div>
+</div>
+
+<div class="pdf-signatures">
+
+<div class="sign-box">
+<div class="sign-line"></div>
+<p>Customer Signature</p>
+</div>
+
+<div class="sign-box">
+<div class="sign-line"></div>
+<p>Authorized Signature</p>
+</div>
+
+</div>
+
+<div class="thank-you-note">
+Thank you for choosing our services.
+</div>
+
+</div>
+
+<script>
+const today = new Date();
+
+const day = String(today.getDate()).padStart(2,'0');
+const month = String(today.getMonth()+1).padStart(2,'0');
+const year = String(today.getFullYear()).slice(-2);
+
+let counter = localStorage.getItem('invoiceCounter') || 1;
+
+let invoiceNo =
+day + month + year +
+'-' +
+String(counter).padStart(3,'0');
+
+localStorage.setItem(
+'invoiceCounter',
+parseInt(counter)+1
+);
+
+function addRow(){
+const tr=document.createElement('tr');
+tr.innerHTML=`
+<td>
+<input
+class="desc"
+placeholder="Item Description">
+</td>
+<td><input type="number" class="qty" value="1" min="1" oninput="calc()"></td>
+<td><input type="number" class="rate" value="0" oninput="calc()"></td>
+<td><input class="amt" value="0.00" readonly></td>
+<td>
+<button
+class="btn del"
+onclick="this.closest('tr').remove();calc()">
+Remove Item
+</button>
+</td>`;
+document.getElementById('tableBody').appendChild(tr);
+calc();
+}
+
+function calc(){
+let total=0;
+document.querySelectorAll('#tableBody tr').forEach(r=>{
+const q=parseFloat(r.querySelector('.qty').value)||0;
+const rate=parseFloat(r.querySelector('.rate').value)||0;
+const amt=q*rate;
+r.querySelector('.amt').value=amt.toFixed(2);
+total+=amt;
+});
+document.getElementById('grandTotal').innerText=total.toFixed(2);
+}
+
+addRow();
+
+async function generatePDF(){
+
+let subtotal=0;
+let rows='';
+
+document.querySelectorAll('#tableBody tr').forEach(r=>{
+
+const d=r.querySelector('.desc').value || '-';
+const q=parseFloat(r.querySelector('.qty').value)||0;
+const rate=parseFloat(r.querySelector('.rate').value)||0;
+const amt=q*rate;
+
+subtotal+=amt;
+
+rows+=`
+<tr>
+<td>${d}</td>
+<td>${q}</td>
+<td>₹${rate.toFixed(2)}</td>
+<td>₹${amt.toFixed(2)}</td>
+</tr>`;
+});
+
+const total=subtotal;
+
+document.getElementById('pdfName').innerText=document.getElementById('customerName').value;
+document.getElementById('pdfMobile').innerText=document.getElementById('customerMobile').value;
+document.getElementById('pdfAddress').innerText=document.getElementById('customerAddress').value;
+
+document.getElementById('pdfInvoiceNo').innerText=invoiceNo;
+document.getElementById('pdfDate').innerText=new Date().toLocaleDateString('en-GB');
+
+document.getElementById('pdfItems').innerHTML=rows;
+
+document.getElementById('pdfSubtotal').innerText = '₹'+subtotal.toFixed(2);
+document.getElementById('pdfTotal').innerText = '₹'+subtotal.toFixed(2);;
+
+const div=document.getElementById('invoice-template');
+div.style.display='block';
+
+const canvas=await html2canvas(div,{scale:2});
+
+const img=canvas.toDataURL('image/png');
+
+const {jsPDF}=window.jspdf;
+const pdf=new jsPDF('p','mm','a4');
+
+const width=210;
+const height=canvas.height*width/canvas.width;
+
+pdf.addImage(img,'PNG',0,0,width,height);
+pdf.save(invoiceNo+'.pdf');
+
+div.style.display='none';
+}
+</script>
+
+</body>
+</html>
